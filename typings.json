@@ -1,5 +1,5 @@
 {
-  "dependencies": {
-    "d3": "registry:npm/d3#3.0.0+20160211003958"
+  "globalDependencies": {
+    "d3": "registry:dt/d3#0.0.0+20160619032210"
   }
 }
