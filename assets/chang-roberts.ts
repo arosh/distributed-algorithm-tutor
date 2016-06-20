@@ -14,6 +14,7 @@
 
     function nodePosition(i: number, n: number): [number, number] {
         const theta = -2 * Math.PI / n * i;
+        // x座標もy座標も [-1,1] で指定すれば良い
         const x = xScale(-Math.sin(theta));
         const y = yScale(-Math.cos(theta));
         return [x, y];
@@ -51,6 +52,7 @@
     const colorRed = "#F44336";
     const colorOrange = "#FFC107";
 
+    // 円を描画
     svg.selectAll("circle")
         .data(dataset)
         .enter()
@@ -66,6 +68,9 @@
             fill: colorRed
         });
 
+    // 円の中にテキストを描画
+    // "text-anchor": "middle", dy: "0.35em" と設定すると、ちょうどいい感じになる
+    // http://qiita.com/daxanya1/items/734e65a7ca58bbe2a98c
     svg.selectAll("text")
         .data(dataset)
         .enter()
