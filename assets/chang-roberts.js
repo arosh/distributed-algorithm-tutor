@@ -12,6 +12,7 @@
         .range([0 + nodeRadius, height - nodeRadius]);
     function nodePosition(i, n) {
         var theta = -2 * Math.PI / n * i;
+        // x座標もy座標も [-1,1] で指定すれば良い
         var x = xScale(-Math.sin(theta));
         var y = yScale(-Math.cos(theta));
         return [x, y];
@@ -20,9 +21,9 @@
         function Node(id, i, nodeSize) {
             this.id = id;
             this.nodeSize = nodeSize;
-            this.updateIndex(i);
+            this.updatePosition(i);
         }
-        Node.prototype.updateIndex = function (i) {
+        Node.prototype.updatePosition = function (i) {
             _a = nodePosition(i, this.nodeSize), this.x = _a[0], this.y = _a[1];
             var _a;
         };
@@ -40,6 +41,7 @@
     // https://material.google.com/style/color.html#
     var colorRed = "#F44336";
     var colorOrange = "#FFC107";
+    // 円を描画
     svg.selectAll("circle")
         .data(dataset)
         .enter()
@@ -54,6 +56,9 @@
         r: nodeRadius,
         fill: colorRed
     });
+    // 円の中にテキストを描画
+    // "text-anchor": "middle", dy: "0.35em" と設定すると、ちょうどいい感じになる
+    // http://qiita.com/daxanya1/items/734e65a7ca58bbe2a98c
     svg.selectAll("text")
         .data(dataset)
         .enter()
@@ -77,7 +82,7 @@
     document.getElementById("button-gt").onclick = function () {
         counter++;
         for (var i = 0; i < dataset.length; i++) {
-            dataset[i].updateIndex((counter + i) % dataset.length);
+            dataset[i].updatePosition((counter + i) % dataset.length);
         }
         var duration = 350;
         svg.selectAll("circle")

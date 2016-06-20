@@ -29,10 +29,10 @@
         constructor(id: number, i: number, nodeSize: number) {
             this.id = id;
             this.nodeSize = nodeSize;
-            this.updateIndex(i);
+            this.updatePosition(i);
         }
 
-        updateIndex(i: number) {
+        updatePosition(i: number) {
             [this.x, this.y] = nodePosition(i, this.nodeSize)
         }
     }
@@ -95,7 +95,7 @@
     document.getElementById("button-gt").onclick = () => {
         counter++;
         for (let i = 0; i < dataset.length; i++) {
-            dataset[i].updateIndex((counter + i) % dataset.length);
+            dataset[i].updatePosition((counter + i) % dataset.length);
         }
         const duration = 350;
         svg.selectAll("circle")
