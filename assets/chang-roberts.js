@@ -38,9 +38,11 @@
         .append("svg")
         .attr({ width: width, height: height })
         .classed("center-block", true);
+    // const svgNode = svg.append("g")
     // https://material.google.com/style/color.html#
     var colorRed = "#F44336";
     var colorOrange = "#FFC107";
+    var colorBlueGrey = "#607D8B";
     // 円を描画
     svg.selectAll("circle")
         .data(dataset)
@@ -78,6 +80,9 @@
         .text(function (d, i) {
         return d.id;
     });
+    document.getElementById("button-start").onclick = function () {
+        // svg.selectAll("text")
+    };
     var counter = 0;
     document.getElementById("button-gt").onclick = function () {
         counter++;

@@ -47,10 +47,12 @@
         .append("svg")
         .attr({ width: width, height: height })
         .classed("center-block", true);
+    // const svgNode = svg.append("g")
 
     // https://material.google.com/style/color.html#
     const colorRed = "#F44336";
     const colorOrange = "#FFC107";
+    const colorBlueGrey = "#607D8B";
 
     // 円を描画
     svg.selectAll("circle")
@@ -90,6 +92,10 @@
         .text((d, i) => {
             return d.id;
         });
+    
+    document.getElementById("button-start").onclick = () => {
+        // svg.selectAll("text")
+    }
 
     let counter = 0;
     document.getElementById("button-gt").onclick = () => {
