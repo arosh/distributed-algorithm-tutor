@@ -1,7 +1,40 @@
 !function () {
+    var Scaler = (function () {
+        function Scaler(xScale, yScale) {
+            this.xScale = xScale;
+            this.yScale = yScale;
+        }
+        return Scaler;
+    }());
+    var Node = (function () {
+        function Node(id, nodeSize, scaler) {
+            this.id = id;
+            this.nodeSize = nodeSize;
+            this.scaler = scaler;
+            this.id = id;
+            this.nodeSize = nodeSize;
+        }
+        Node.prototype.computePosition = function (i) {
+            var theta = -2 * Math.PI / this.nodeSize * i;
+            // x座標もy座標も [-1,1] で指定すれば良い
+            this.x = this.scaler.xScale(-Math.sin(theta));
+            this.y = this.scaler.yScale(-Math.cos(theta));
+        };
+        return Node;
+    }());
+    var Message = (function () {
+        function Message(text) {
+            this.text = text;
+            this.text = text;
+        }
+        return Message;
+    }());
     var width = 940, height = 540;
     var ids = [0, 4, 2, 6, 1, 5, 3, 7];
     var nodeRadius = 30;
+    var messageFontSize = 18;
+    var messageTx = -30;
+    var messageTy = -30;
     var xScale = d3.scale
         .linear()
         .domain([-1, 1])
@@ -10,42 +43,35 @@
         .linear()
         .domain([-1, 1])
         .range([0 + nodeRadius, height - nodeRadius]);
-    function nodePosition(i, n) {
-        var theta = -2 * Math.PI / n * i;
-        // x座標もy座標も [-1,1] で指定すれば良い
-        var x = xScale(-Math.sin(theta));
-        var y = yScale(-Math.cos(theta));
-        return [x, y];
-    }
-    var Node = (function () {
-        function Node(id, i, nodeSize) {
-            this.id = id;
-            this.nodeSize = nodeSize;
-            this.updatePosition(i);
-        }
-        Node.prototype.updatePosition = function (i) {
-            _a = nodePosition(i, this.nodeSize), this.x = _a[0], this.y = _a[1];
-            var _a;
-        };
-        return Node;
-    }());
-    var dataset = [];
+    var scaler = new Scaler(xScale, yScale);
+    var nodes = [];
     for (var i = 0; i < ids.length; i++) {
         var n = ids.length;
-        dataset.push(new Node(ids[i], i, n));
+        var node = new Node(ids[i], n, scaler);
+        node.computePosition(i);
+        nodes.push(node);
+    }
+    var messages = [];
+    for (var i = 0; i < ids.length; i++) {
+        var message = new Message("<candidate," + ids[i] + ">");
+        message.index = i;
+        messages.push(message);
     }
     var svg = d3.select(".container")
         .append("svg")
         .attr({ width: width, height: height })
         .classed("center-block", true);
-    // const svgNode = svg.append("g")
+    var svgNode = svg.append("g");
+    var svgMessage = svg.append("g");
     // https://material.google.com/style/color.html#
     var colorRed = "#F44336";
     var colorOrange = "#FFC107";
     var colorBlueGrey = "#607D8B";
+    var colorWhite = "#FAFAFA";
+    var colorBlack = "#212121";
     // 円を描画
-    svg.selectAll("circle")
-        .data(dataset)
+    svgNode.selectAll("circle")
+        .data(nodes)
         .enter()
         .append("circle")
         .attr({
@@ -61,8 +87,8 @@
     // 円の中にテキストを描画
     // "text-anchor": "middle", dy: "0.35em" と設定すると、ちょうどいい感じになる
     // http://qiita.com/daxanya1/items/734e65a7ca58bbe2a98c
-    svg.selectAll("text")
-        .data(dataset)
+    svgNode.selectAll("text")
+        .data(nodes)
         .enter()
         .append("text")
         .attr({
@@ -75,23 +101,40 @@
         "text-anchor": "middle",
         "font-size": nodeRadius,
         dy: "0.35em",
-        fill: "white"
+        fill: colorWhite
     })
         .text(function (d, i) {
         return d.id;
     });
     document.getElementById("button-start").onclick = function () {
-        // svg.selectAll("text")
+        svgMessage.selectAll("text")
+            .data(messages)
+            .enter()
+            .append("text");
+        svgMessage.selectAll("text")
+            .data(messages)
+            .attr({
+            x: function (d, i) {
+                return nodes[d.index].x + messageTx;
+            },
+            y: function (d, i) {
+                return nodes[d.index].y + messageTy;
+            },
+            "text-anchor": "middle",
+            "font-size": nodeRadius,
+            fill: colorBlack
+        })
+            .text(function (d, i) { return d.text; });
     };
     var counter = 0;
     document.getElementById("button-gt").onclick = function () {
         counter++;
-        for (var i = 0; i < dataset.length; i++) {
-            dataset[i].updatePosition((counter + i) % dataset.length);
+        for (var i = 0; i < nodes.length; i++) {
+            nodes[i].computePosition((counter + i) % nodes.length);
         }
         var duration = 350;
-        svg.selectAll("circle")
-            .data(dataset)
+        svgNode.selectAll("circle")
+            .data(nodes)
             .transition()
             .duration(duration)
             .ease("linear")
@@ -103,8 +146,8 @@
                 return d.y;
             }
         });
-        svg.selectAll("text")
-            .data(dataset)
+        svgNode.selectAll("text")
+            .data(nodes)
             .transition()
             .duration(duration)
             .ease("linear")
