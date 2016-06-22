@@ -109,6 +109,10 @@
     const svgNode = svg.append("g");
     const svgMessage = svg.append("g");
 
+    let svgNodeCircle = svgNode.selectAll("circle").data(nodes);
+    let svgNodeText = svgNode.selectAll("text").data(nodes);
+    let svgMessageText = svgMessage.selectAll("text").data(messages);
+
     // https://material.google.com/style/color.html#
     const colorRed = "#F44336";
     const colorOrange = "#FFC107";
@@ -143,17 +147,17 @@
             message.index = i;
             messages.push(message);
         }
+
+        svgNodeCircle = svgNode.selectAll("circle").data(nodes);
+        svgNodeText = svgNode.selectAll("text").data(nodes);
+        svgMessageText = svgMessage.selectAll("text").data(messages);
     }
 
     function initializeNodeView() {
         // ノードを表す円を描画
-        svgNode.selectAll("circle")
-            .data(nodes)
-            .enter()
-            .append("circle");
-
-        svgNode.selectAll("circle")
-            .data(nodes)
+        svgNodeCircle.enter().append("circle");
+        svgNodeCircle.exit().remove();
+        svgNodeCircle
             .attr({
                 cx: (d, i) => {
                     return scaler.xScale(d.getX());
@@ -168,13 +172,9 @@
         // 円の中にテキストを描画
         // "text-anchor": "middle", dy: "0.35em" と設定すると、ちょうどいい感じになる
         // http://qiita.com/daxanya1/items/734e65a7ca58bbe2a98c
-        svgNode.selectAll("text")
-            .data(nodes)
-            .enter()
-            .append("text");
-
-        svgNode.selectAll("text")
-            .data(nodes)
+        svgNodeText.enter().append("text");
+        svgNodeText.exit().remove();
+        svgNodeText
             .attr({
                 x: (d, i) => {
                     return scaler.xScale(d.getX());
@@ -187,21 +187,17 @@
                 dy: "0.35em",
                 fill: colorWhite
             })
-            .text((d, i) => {
-                return d.id;
-            });
+            .text((d, i) => { return d.id; });
+
     }
 
     function initializeMessageView() {
-        svgMessage.selectAll("text")
-            .data(messages)
-            .enter()
-            .append("text");
-
-        svgMessage.selectAll("text")
-            .data(messages)
+        svgMessageText.enter().append("text");
+        svgMessageText.exit().remove();
+        svgMessageText
             .attr({
                 x: (d, i) => {
+                    console.dir(nodes[d.index].computeMessagePosition());
                     return scaler.xScale(nodes[d.index].computeMessagePosition().getX());
                 },
                 y: (d, i) => {
@@ -213,6 +209,8 @@
             })
             .text((d, i) => { return d.text; })
     }
+
+    initializeBackground();
 
     document.getElementById("button-start").onclick = () => {
         initializeModel();
@@ -228,9 +226,7 @@
             messages[i].index = (counter + i) % nodes.length;
         }
 
-        svgMessage.selectAll("text")
-            .data(messages)
-            .transition()
+        svgMessageText.transition()
             .duration(duration)
             .ease("linear")
             .attr({
