@@ -1,9 +1,12 @@
 !function () {
-    const width = 940, height = 540;
+    const width = 970 / 12 * 9, height = 540;
     const duration = 350;
     const ids = [0, 4, 2, 6, 1, 5, 3, 7];
     const nodeRadius = 30;
     const messageFontSize = 18;
+    const rectWidth = 4 * nodeRadius;
+    const rectHeight = 1.5 * nodeRadius;
+    const rectCornerRadius = 4;
 
     class Point {
         constructor(private x: number, private y: number) { }
@@ -49,11 +52,15 @@
         index: number;
         point: Point;
         messagePositioncalculator: MessagePositionCalculator;
+        isActive: boolean;
+        private status: string;
 
         constructor(public id: number, public nodeSize: number) {
             this.id = id;
             this.nodeSize = nodeSize;
             this.messagePositioncalculator = new MessagePositionCalculator(nodeSize);
+            this.isActive = true;
+            this.status = "";
         }
 
         getX(): number {
@@ -79,12 +86,27 @@
             const t = this.messagePositioncalculator.computeRelativePosition(this.index);
             return new Point(this.getX() + t.getX(), this.getY() + t.getY());
         }
+
+        deactivate() {
+            this.isActive = false;
+        }
+
+        updateStatus(status: string) {
+            this.status = status;
+        }
+
+        getStatus(): string {
+            return this.status;
+        }
     }
 
     class Message {
-        index: number;
+        nodeIndex: number;
 
-        constructor(public text: string) { }
+        constructor(public label: string, public data: number) { }
+        toString(): string {
+            return "<" + this.label + "," + this.data + ">";
+        }
     }
 
     const xScale = d3.scale
@@ -100,17 +122,20 @@
     let nodes: Node[];
     let messages: Message[];
 
-    const svg = d3.select(".container")
+    const svg = d3.select("#d3")
         .append("svg")
         .attr({ width: width, height: height })
         .classed("center-block", true);
 
     const svgBackground = svg.append("g");
     const svgNode = svg.append("g");
+    const svgNodeStatus = svg.append("g");
     const svgMessage = svg.append("g");
 
     let svgNodeCircle: d3.selection.Update<Node>;
     let svgNodeText: d3.selection.Update<Node>;
+    let svgNodeStatusRect: d3.selection.Update<Node>;
+    let svgNodeStatusText: d3.selection.Update<Node>;
     let svgMessageText: d3.selection.Update<Message>;
 
     // https://material.google.com/style/color.html#
@@ -139,13 +164,14 @@
             const n = ids.length;
             const node = new Node(ids[i], n);
             node.updateIndexAndPosition(i);
+            node.updateStatus("leader = undefined");
             nodes.push(node);
         }
 
         messages = [];
         for (let i = 0; i < ids.length; i++) {
-            const message = new Message("<candidate," + ids[i] + ">");
-            message.index = i;
+            const message = new Message("candidate", ids[i]);
+            message.nodeIndex = i;
             messages.push(message);
         }
     }
@@ -192,6 +218,25 @@
                 fill: colorWhite
             })
             .text((d, i) => { return d.id; });
+
+        /*
+        svgNodeStatusRect = svgNodeStatus.selectAll("rect").data(nodes);
+        svgNodeStatusRect.enter().append("rect");
+        svgNodeStatusRect.attr({
+            x: (d, i) => {
+                return scaler.xScale(d.getX()) - rectWidth / 2;
+            },
+            y: (d, i) => {
+                return scaler.yScale(d.getY() + 0.2) - rectHeight / 2;
+            },
+            width: rectWidth,
+            height: rectHeight,
+            rx: rectCornerRadius,
+            ry: rectCornerRadius,
+            fill: colorWhite,
+            stroke: colorBlack
+        });
+        */
     }
 
     function initializeMessageView() {
@@ -207,16 +252,16 @@
         svgMessageText
             .attr({
                 x: (d, i) => {
-                    return scaler.xScale(nodes[d.index].computeMessagePosition().getX());
+                    return scaler.xScale(nodes[d.nodeIndex].computeMessagePosition().getX());
                 },
                 y: (d, i) => {
-                    return scaler.yScale(nodes[d.index].computeMessagePosition().getY());
+                    return scaler.yScale(nodes[d.nodeIndex].computeMessagePosition().getY());
                 },
                 "text-anchor": "middle",
                 "font-size": messageFontSize,
                 fill: colorBlack
             })
-            .text((d, i) => { return d.text; })
+            .text((d, i) => { return d.toString(); })
     }
 
     initializeBackground();
@@ -234,7 +279,7 @@
         counter++;
 
         for (let i = 0; i < messages.length; i++) {
-            messages[i].index = (counter + i) % nodes.length;
+            messages[i].nodeIndex = (counter + i) % nodes.length;
         }
 
         svgMessageText.transition()
@@ -242,11 +287,31 @@
             .ease("linear")
             .attr({
                 x: (d, i) => {
-                    return scaler.xScale(nodes[d.index].computeMessagePosition().getX());
+                    return scaler.xScale(nodes[d.nodeIndex].computeMessagePosition().getX());
                 },
                 y: (d, i) => {
-                    return scaler.yScale(nodes[d.index].computeMessagePosition().getY());
+                    return scaler.yScale(nodes[d.nodeIndex].computeMessagePosition().getY());
                 },
             });
+
+        let leader = -1;
+        for (let i = 0; i < messages.length; i++) {
+            if (nodes[messages[i].nodeIndex].id > messages[i].data) {
+                nodes[messages[i].nodeIndex].deactivate();
+            }
+            else if (nodes[messages[i].nodeIndex].id == messages[i].data) {
+                leader = messages[i].nodeIndex;
+            }
+        }
+
+        svgNodeCircle.attr({
+            fill: (d, i) => {
+                return d.isActive ? colorRed : colorBlueGrey;
+            }
+        });
+
+        if (leader != -1) {
+
+        }
     };
 } ();
