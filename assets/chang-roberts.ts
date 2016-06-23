@@ -97,8 +97,8 @@
         .range([0 + 2 * nodeRadius, height - 2 * nodeRadius]);
     const scaler = new Scaler(xScale, yScale);
 
-    const nodes: Node[] = [];
-    const messages: Message[] = [];
+    let nodes: Node[];
+    let messages: Message[];
 
     const svg = d3.select(".container")
         .append("svg")
@@ -109,9 +109,9 @@
     const svgNode = svg.append("g");
     const svgMessage = svg.append("g");
 
-    let svgNodeCircle = svgNode.selectAll("circle").data(nodes);
-    let svgNodeText = svgNode.selectAll("text").data(nodes);
-    let svgMessageText = svgMessage.selectAll("text").data(messages);
+    let svgNodeCircle: d3.selection.Update<Node>;
+    let svgNodeText: d3.selection.Update<Node>;
+    let svgMessageText: d3.selection.Update<Message>;
 
     // https://material.google.com/style/color.html#
     const colorRed = "#F44336";
@@ -133,8 +133,8 @@
             });
     }
 
-
     function initializeModel() {
+        nodes = [];
         for (let i = 0; i < ids.length; i++) {
             const n = ids.length;
             const node = new Node(ids[i], n);
@@ -142,21 +142,25 @@
             nodes.push(node);
         }
 
+        messages = [];
         for (let i = 0; i < ids.length; i++) {
             const message = new Message("<candidate," + ids[i] + ">");
             message.index = i;
             messages.push(message);
         }
-
-        svgNodeCircle = svgNode.selectAll("circle").data(nodes);
-        svgNodeText = svgNode.selectAll("text").data(nodes);
-        svgMessageText = svgMessage.selectAll("text").data(messages);
     }
 
     function initializeNodeView() {
+        if (Array.isArray(nodes) == false) {
+            throw new Error("Array.isArray(nodes) == false");
+        }
+        if (nodes.length != 8) {
+            throw new Error("nodes.length != 8");
+        }
+
         // ノードを表す円を描画
+        svgNodeCircle = svgNode.selectAll("circle").data(nodes);
         svgNodeCircle.enter().append("circle");
-        svgNodeCircle.exit().remove();
         svgNodeCircle
             .attr({
                 cx: (d, i) => {
@@ -172,8 +176,8 @@
         // 円の中にテキストを描画
         // "text-anchor": "middle", dy: "0.35em" と設定すると、ちょうどいい感じになる
         // http://qiita.com/daxanya1/items/734e65a7ca58bbe2a98c
+        svgNodeText = svgNode.selectAll("text").data(nodes);
         svgNodeText.enter().append("text");
-        svgNodeText.exit().remove();
         svgNodeText
             .attr({
                 x: (d, i) => {
@@ -188,16 +192,21 @@
                 fill: colorWhite
             })
             .text((d, i) => { return d.id; });
-
     }
 
     function initializeMessageView() {
+        if (Array.isArray(messages) == false) {
+            throw new Error("Array.isArray(messages) == false");
+        }
+        if (messages.length != 8) {
+            throw new Error("messages.length != 8");
+        }
+
+        svgMessageText = svgMessage.selectAll("text").data(messages);
         svgMessageText.enter().append("text");
-        svgMessageText.exit().remove();
         svgMessageText
             .attr({
                 x: (d, i) => {
-                    console.dir(nodes[d.index].computeMessagePosition());
                     return scaler.xScale(nodes[d.index].computeMessagePosition().getX());
                 },
                 y: (d, i) => {
@@ -212,13 +221,15 @@
 
     initializeBackground();
 
+    let counter = 0;
+
     document.getElementById("button-start").onclick = () => {
+        counter = 0;
         initializeModel();
         initializeNodeView();
         initializeMessageView();
     }
 
-    let counter = 0;
     document.getElementById("button-gt").onclick = () => {
         counter++;
 

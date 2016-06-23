@@ -90,8 +90,8 @@
         .domain([-1, 1])
         .range([0 + 2 * nodeRadius, height - 2 * nodeRadius]);
     var scaler = new Scaler(xScale, yScale);
-    var nodes = [];
-    var messages = [];
+    var nodes;
+    var messages;
     var svg = d3.select(".container")
         .append("svg")
         .attr({ width: width, height: height })
@@ -99,9 +99,9 @@
     var svgBackground = svg.append("g");
     var svgNode = svg.append("g");
     var svgMessage = svg.append("g");
-    var svgNodeCircle = svgNode.selectAll("circle").data(nodes);
-    var svgNodeText = svgNode.selectAll("text").data(nodes);
-    var svgMessageText = svgMessage.selectAll("text").data(messages);
+    var svgNodeCircle;
+    var svgNodeText;
+    var svgMessageText;
     // https://material.google.com/style/color.html#
     var colorRed = "#F44336";
     var colorOrange = "#FFC107";
@@ -121,25 +121,30 @@
         });
     }
     function initializeModel() {
+        nodes = [];
         for (var i = 0; i < ids.length; i++) {
             var n = ids.length;
             var node = new Node(ids[i], n);
             node.updateIndexAndPosition(i);
             nodes.push(node);
         }
+        messages = [];
         for (var i = 0; i < ids.length; i++) {
             var message = new Message("<candidate," + ids[i] + ">");
             message.index = i;
             messages.push(message);
         }
-        svgNodeCircle = svgNode.selectAll("circle").data(nodes);
-        svgNodeText = svgNode.selectAll("text").data(nodes);
-        svgMessageText = svgMessage.selectAll("text").data(messages);
     }
     function initializeNodeView() {
+        if (Array.isArray(nodes) == false) {
+            throw new Error("Array.isArray(nodes) == false");
+        }
+        if (nodes.length != 8) {
+            throw new Error("nodes.length != 8");
+        }
         // ノードを表す円を描画
+        svgNodeCircle = svgNode.selectAll("circle").data(nodes);
         svgNodeCircle.enter().append("circle");
-        svgNodeCircle.exit().remove();
         svgNodeCircle
             .attr({
             cx: function (d, i) {
@@ -154,8 +159,8 @@
         // 円の中にテキストを描画
         // "text-anchor": "middle", dy: "0.35em" と設定すると、ちょうどいい感じになる
         // http://qiita.com/daxanya1/items/734e65a7ca58bbe2a98c
+        svgNodeText = svgNode.selectAll("text").data(nodes);
         svgNodeText.enter().append("text");
-        svgNodeText.exit().remove();
         svgNodeText
             .attr({
             x: function (d, i) {
@@ -172,12 +177,17 @@
             .text(function (d, i) { return d.id; });
     }
     function initializeMessageView() {
+        if (Array.isArray(messages) == false) {
+            throw new Error("Array.isArray(messages) == false");
+        }
+        if (messages.length != 8) {
+            throw new Error("messages.length != 8");
+        }
+        svgMessageText = svgMessage.selectAll("text").data(messages);
         svgMessageText.enter().append("text");
-        svgMessageText.exit().remove();
         svgMessageText
             .attr({
             x: function (d, i) {
-                console.dir(nodes[d.index].computeMessagePosition());
                 return scaler.xScale(nodes[d.index].computeMessagePosition().getX());
             },
             y: function (d, i) {
@@ -190,12 +200,13 @@
             .text(function (d, i) { return d.text; });
     }
     initializeBackground();
+    var counter = 0;
     document.getElementById("button-start").onclick = function () {
+        counter = 0;
         initializeModel();
         initializeNodeView();
         initializeMessageView();
     };
-    var counter = 0;
     document.getElementById("button-gt").onclick = function () {
         counter++;
         for (var i = 0; i < messages.length; i++) {
