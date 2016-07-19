@@ -28,7 +28,7 @@
 
     class MessagePositionCalculator {
         constructor(public nodeSize: number) {
-            if (nodeSize != 8) {
+            if (nodeSize !== 8) {
                 throw new Error("nodeSize != 8");
             }
         }
@@ -177,10 +177,10 @@
     }
 
     function initializeNodeView() {
-        if (Array.isArray(nodes) == false) {
+        if (Array.isArray(nodes) === false) {
             throw new Error("Array.isArray(nodes) == false");
         }
-        if (nodes.length != 8) {
+        if (nodes.length !== 8) {
             throw new Error("nodes.length != 8");
         }
 
@@ -240,10 +240,10 @@
     }
 
     function initializeMessageView() {
-        if (Array.isArray(messages) == false) {
+        if (Array.isArray(messages) === false) {
             throw new Error("Array.isArray(messages) == false");
         }
-        if (messages.length != 8) {
+        if (messages.length !== 8) {
             throw new Error("messages.length != 8");
         }
 
@@ -261,7 +261,7 @@
                 "font-size": messageFontSize,
                 fill: colorBlack
             })
-            .text((d, i) => { return d.toString(); })
+            .text((d, i) => { return d.toString(); });
     }
 
     initializeBackground();
@@ -273,7 +273,7 @@
         initializeModel();
         initializeNodeView();
         initializeMessageView();
-    }
+    };
 
     document.getElementById("button-gt").onclick = () => {
         counter++;
@@ -299,7 +299,7 @@
             if (nodes[messages[i].nodeIndex].id > messages[i].data) {
                 nodes[messages[i].nodeIndex].deactivate();
             }
-            else if (nodes[messages[i].nodeIndex].id == messages[i].data) {
+            else if (nodes[messages[i].nodeIndex].id === messages[i].data) {
                 leader = messages[i].nodeIndex;
             }
         }
@@ -310,7 +310,7 @@
             }
         });
 
-        if (leader != -1) {
+        if (leader !== -1) {
 
         }
     };

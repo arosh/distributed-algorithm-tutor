@@ -30,7 +30,7 @@
     var MessagePositionCalculator = (function () {
         function MessagePositionCalculator(nodeSize) {
             this.nodeSize = nodeSize;
-            if (nodeSize != 8) {
+            if (nodeSize !== 8) {
                 throw new Error("nodeSize != 8");
             }
         }
@@ -158,10 +158,10 @@
         }
     }
     function initializeNodeView() {
-        if (Array.isArray(nodes) == false) {
+        if (Array.isArray(nodes) === false) {
             throw new Error("Array.isArray(nodes) == false");
         }
-        if (nodes.length != 8) {
+        if (nodes.length !== 8) {
             throw new Error("nodes.length != 8");
         }
         // ノードを表す円を描画
@@ -217,10 +217,10 @@
         */
     }
     function initializeMessageView() {
-        if (Array.isArray(messages) == false) {
+        if (Array.isArray(messages) === false) {
             throw new Error("Array.isArray(messages) == false");
         }
-        if (messages.length != 8) {
+        if (messages.length !== 8) {
             throw new Error("messages.length != 8");
         }
         svgMessageText = svgMessage.selectAll("text").data(messages);
@@ -268,7 +268,7 @@
             if (nodes[messages[i].nodeIndex].id > messages[i].data) {
                 nodes[messages[i].nodeIndex].deactivate();
             }
-            else if (nodes[messages[i].nodeIndex].id == messages[i].data) {
+            else if (nodes[messages[i].nodeIndex].id === messages[i].data) {
                 leader = messages[i].nodeIndex;
             }
         }
@@ -277,7 +277,7 @@
                 return d.isActive ? colorRed : colorBlueGrey;
             }
         });
-        if (leader != -1) {
+        if (leader !== -1) {
         }
     };
 }();
